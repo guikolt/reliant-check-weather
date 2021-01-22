@@ -1,5 +1,9 @@
 script to check weather forecast for JPA and backup this data, using puppet5 and shellscript
 
+$ tested on
+- Debian GNU/Linux 10 (buster)
+- Puppet v5.5.10
+
 $ modules/weather/files/weather_forecast
 - grabs weather forecast information from wttr.in
 - writes into /tmp/weather_forecast/YYYY-MM-DD
