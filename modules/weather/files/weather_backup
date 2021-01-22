@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# variables
+
+backupSrc="/tmp/weather_forecast"
+backupDest="/backup/$(date +%m-%d-%H-%M)"
+
+if [ ! -d "${backupDest}" ]; then mkdir -p ${backupDest}; fi
+
+backup(){
+	tar -zcf ${backupDest}/weather.backup.tar.gz ${backupSrc}/$(date -I)
+	chmod 400 ${backupDest}/weather.backup.tar.gz 
+}
+
+cleanup(){
+	find /backup -maxdepth 1 ! -path . -type d -mtime +10 -exec rm -rf {} \;
+}
+
+cleanup
+backup

@@ -1,0 +1,10 @@
+[Unit]
+Description=Weather forecast
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/weather_forecast start
+ExecStop=/usr/local/bin/weather_forecast stop
+
+[Install]
+WantedBy=multi-user.target

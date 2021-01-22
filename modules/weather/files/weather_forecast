@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# variables
+
+city="jpa"
+folder="/tmp/weather_forecast"
+logfile="${folder}/${city}.forecast.log"
+pidfile="/var/run/weather.pid"
+
+if [ ! -d "${folder}" ]; then mkdir -p ${folder};fi
+
+#
+
+fetchWeather(){
+	while [ true ]; do
+		echo $$ > ${pidfile}
+		outfile="${folder}/$(date -I)/$(date +%H_%M_%S).${city}.forecast"
+		if [ ! -d "${folder}/$(date -I)" ]; then mkdir -p ${folder}/$(date -I);fi
+
+		curl -s https://wttr.in/${city}?T > ${outfile}
+		if [ $? -ne 0 ]; then echo "$(date) unable to fetch forecast data for ${city}"|tee -a ${logfile}; else echo "$(date) forecast data for ${city} saved to ${outfile}"|tee -a ${logfile}; fi
+		sleep 60
+	done
+}
+
+case "$1" in
+start)
+	if [ -e ${pidfile} ]; then 
+		echo -e "$0 is already running, pid=$(cat ${pidfile})\r\nattempting restart..."
+		kill -9 $(cat ${pidfile}) 1>/dev/null 2>&1;if [ $? -ne 0 ]; then echo "killing pid returned an error, process presumed dead";fi
+		unlink ${pidfile}
+	fi
+	echo "$(date) starting service"|tee -a ${logfile}
+	fetchWeather
+	;;
+stop)
+	kill -9 $(cat ${pidfile})
+	unlink ${pidfile}
+	echo "$(date) stopping service"|tee -a ${logfile}
+	;;
+restart)
+	$0 stop
+	$0 start
+	echo "$(date) restarting service"|tee -a ${logfile}
+	;;
+status)
+	if [ -e ${pidfile} ]; then
+		echo weather_forecast is running, pid=$(cat ${pidfile})
+	else
+		echo weather_forecast is not running
+	exit 1
+	fi
+   ;;
+*)
+   echo "Usage: $0 {start|stop|status|restart}"
+esac
